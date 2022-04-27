@@ -29,7 +29,7 @@ export default {
     // computed
     let address = computed(() => $s.getters['common/wallet/address'])
 
-    return {
+    return {  
       address
     }
   }
