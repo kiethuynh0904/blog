@@ -14,6 +14,7 @@ import {
   V1Beta1PageResponse,
   ProtobufAny,
   Stakingv1Beta1Validator,
+  V1Beta1Commission,
 } from "../store/generated/cosmos/cosmos-sdk/cosmos.staking.v1beta1/module/rest";
 
 type Response = {
@@ -29,10 +30,11 @@ export type ValidatorsForUI = {
 };
 
 export type ValidatorForUI = {
+  name: string;
   address: string;
   totalStaked: string;
   selfBonded: string;
-  commissionRate: string;
+  commission: V1Beta1Commission;
 };
 
 type Params = {
@@ -53,6 +55,7 @@ export default function ({ $s }: Params): Response {
   // actions
   let queryValidators = (opts: any) =>
     $s.dispatch("cosmos.staking.v1beta1/QueryValidators", opts);
+
   // lh
   onBeforeMount(async () => {
     queryValidators({
@@ -87,16 +90,18 @@ export default function ({ $s }: Params): Response {
     validator: Stakingv1Beta1Validator
   ): Promise<ValidatorForUI> => {
     let normalized: ValidatorForUI = {
+      name: "",
       address: "",
       totalStaked: "",
       selfBonded: "",
-      commissionRate: "",
+      commission: {},
     };
 
+    normalized.name = validator.description.moniker;
     normalized.address = validator.operator_address;
     normalized.totalStaked = validator.tokens;
     normalized.selfBonded = validator.tokens;
-    normalized.commissionRate = validator.commission.commission_rates.rate;
+    normalized.commission = validator.commission;
 
     return normalized;
   };
