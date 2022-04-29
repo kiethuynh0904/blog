@@ -32,7 +32,7 @@
                     >Total Staked</a-typography-paragraph
                   >
                   <a-typography-paragraph>{{
-                    formatPrice(item.totalStaked) + " Stake"
+                    Common.formatPrice(item.totalStaked) + " Stake"
                   }}</a-typography-paragraph>
                 </label>
                 <label
@@ -102,14 +102,8 @@ export default {
     const validatorList = computed<ValidatorForUI[]>(
       () => validators.value.validators.validators
     );
-
-    //method
-    function formatPrice(value) {
-      let val = (value / 1).toFixed(0);
-      return val.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",");
-    }
-
-    function calculateVotePower(bondedTokens: string) {
+    //methods
+    const calculateVotePower = (bondedTokens: string) => {
       return (
         (Number(bondedTokens) / Number(poolRaw.value.bonded_tokens)) *
         100
@@ -118,7 +112,6 @@ export default {
 
     return {
       validatorList,
-      formatPrice,
       calculateVotePower,
       Common,
       validators,

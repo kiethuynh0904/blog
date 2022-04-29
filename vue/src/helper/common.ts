@@ -6,3 +6,8 @@ export const maskedAddress = (address: string) => {
 export const sleepUtil = (ms: number): Promise<void> => {
   return new Promise((resolve) => setTimeout(resolve, ms));
 };
+
+export const formatPrice = (value, decimal: number = 0) => {
+  let val = (value / 1).toFixed(decimal);
+  return val.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",");
+}
