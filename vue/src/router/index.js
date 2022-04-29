@@ -1,13 +1,15 @@
 import { createRouter, createWebHistory } from 'vue-router'
 
-import Data from '../views/Data.vue'
+import Validators from '../views/Validators.vue'
 import Portfolio from '../views/Portfolio.vue'
+import ValidatorsDetail from '../views/ValidatorsDetail.vue'
 
 const routerHistory = createWebHistory()
 const routes = [
   { path: '/', component: Portfolio },
   { path: '/portfolio', component: Portfolio },
-  { path: '/data', component: Data }
+  { path: '/validators', component: Validators },
+  { path: '/validators/:id', component: ValidatorsDetail, name:"ValidatorsDetail"}
 ]
 
 const router = createRouter({

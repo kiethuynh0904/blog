@@ -25,7 +25,7 @@ export default {
   setup() {
     // store
     let $s = useStore()
-
+    
     // computed
     let address = computed(() => $s.getters['common/wallet/address'])
 

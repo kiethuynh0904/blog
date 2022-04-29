@@ -3,6 +3,7 @@ import {
   computed,
   ComputedRef,
   onBeforeMount,
+  onMounted,
   onUnmounted,
   Ref,
   ref,
@@ -57,7 +58,7 @@ export default function ({ $s }: Params): Response {
     $s.dispatch("cosmos.staking.v1beta1/QueryValidators", opts);
 
   // lh
-  onBeforeMount(async () => {
+  onMounted(async () => {
     queryValidators({
       options: { subscribe: true },
     })
@@ -105,6 +106,7 @@ export default function ({ $s }: Params): Response {
 
     return normalized;
   };
+  
 
   return { validators, validatorsRaw };
 }
