@@ -29,7 +29,7 @@ export default {
     // state
     let navbarLinks = [
       { name: 'Portfolio', url: '/portfolio' },
-      { name: 'Explorer', url: '/data' }
+      { name: 'Validators', url: '/validators' }
     ]
 
     // computed
@@ -39,7 +39,7 @@ export default {
     onBeforeMount(async () => {
       await $s.dispatch('common/env/init')
 
-      router.push('portfolio')
+      // router.push('portfolio');
     })
 
     return {
