@@ -29,7 +29,8 @@ export default {
     // state
     let navbarLinks = [
       { name: 'Portfolio', url: '/portfolio' },
-      { name: 'Validators', url: '/validators' }
+      { name: 'Validators', url: '/validators' },
+      { name: 'Blocks', url: '/blocks' }
     ]
 
     // computed
