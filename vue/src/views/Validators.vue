@@ -48,7 +48,7 @@
                     >Current APR</a-typography-paragraph
                   >
                   <a-typography-paragraph type="success">{{
-                    "APR" + " %"
+                    item?.aprCalculation + " %"
                   }}</a-typography-paragraph>
                 </label>
                 <label
@@ -79,7 +79,11 @@
 
 <script lang="ts">
 import { useStore } from "vuex";
-import { useValidators, usePoolBonded } from "../composables";
+import {
+  useValidators,
+  usePoolBonded,
+  useAprCalculation,
+} from "../composables";
 import { computed } from "vue";
 import ValidatorListItem from "../components/ValidatorListItem.vue";
 import { ValidatorForUI } from "../composables/useValidators";
@@ -108,7 +112,7 @@ export default {
         (Number(bondedTokens) / Number(poolRaw.value.bonded_tokens)) *
         100
       ).toFixed(2);
-    }
+    };
 
     return {
       validatorList,

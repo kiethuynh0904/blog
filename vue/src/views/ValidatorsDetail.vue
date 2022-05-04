@@ -19,7 +19,9 @@
         <a-typography-paragraph type="secondary"
           >Current APR</a-typography-paragraph
         >
-        <a-typography-title :level="4">23%</a-typography-title>
+        <a-typography-title type="success" :level="4">{{
+          aprCalculation + "%"
+        }}</a-typography-title>
       </a-col>
       <a-col class="validator-chain-detail-item" :span="8">
         <a-typography-paragraph type="secondary"
@@ -35,7 +37,9 @@
         <a-typography-paragraph type="secondary"
           >Voting Power</a-typography-paragraph
         >
-        <a-typography-title :level="4">{{calculateVotePower(validator.data?.validator?.tokens) +"%"}}</a-typography-title>
+        <a-typography-title :level="4">{{
+          calculateVotePower(validator.data?.validator?.tokens) + "%"
+        }}</a-typography-title>
       </a-col>
     </a-row>
     <a-row class="validator-basic-info">
@@ -89,11 +93,11 @@
 </template>
 
 <script lang="ts">
-import { defineComponent, onMounted, ref, watch } from "vue";
+import { defineComponent, onMounted, ref, computed, watch } from "vue";
 import { useStore } from "vuex";
 import { useRoute } from "vue-router";
 import { Common } from "../helper";
-import { usePoolBonded } from "../composables";
+import { usePoolBonded, useAprCalculation } from "../composables";
 
 export default {
   setup() {
@@ -102,16 +106,20 @@ export default {
       data: {},
     });
 
+    let aprCalculation = ref("");
+
     let $s = useStore();
     let route = useRoute();
     let { poolRaw } = usePoolBonded({ $s });
+    let { AprCalculation, params } = useAprCalculation({ $s });
     let queryValidatorDetail = async (opts?: any) => {
-      console.log("run here");
       try {
-        validator.value.data = await $s.dispatch(
+        const response = await $s.dispatch(
           "cosmos.staking.v1beta1/QueryValidator",
           opts
         );
+        validator.value.data = response;
+        aprCalculation.value = AprCalculation(response.validator);
       } catch (error) {
       } finally {
         validator.value.isLoading = false;
@@ -125,16 +133,15 @@ export default {
         });
       }
     });
-    // watch(
-    //   () => route.params.id,
-    //   (newId, oldId) => {
-    //     console.log({ newId, oldId });
-    //     queryValidatorDetail({
-    //       params: { validator_addr: newId },
-    //       options: { subscribe: true },
-    //     });
-    //   }
-    // );
+
+    watch(params.value, () => {
+      if (route.params.id) {
+        queryValidatorDetail({
+          options: { subscribe: true },
+          params: { validator_addr: route.params.id },
+        });
+      }
+    });
 
     //methods
     const calculateVotePower = (bondedTokens: string) => {
@@ -144,11 +151,12 @@ export default {
       ).toFixed(2);
     };
 
-    console.log("detail", validator);
     return {
       validator,
       Common,
       calculateVotePower,
+      aprCalculation,
+      AprCalculation,
     };
   },
 };
