@@ -58,7 +58,7 @@ export default function ({ $s }: Params): Response {
     $s.dispatch("cosmos.staking.v1beta1/QueryValidators", opts);
 
   // lh
-  onMounted(async () => {
+  onMounted(() => {
     queryValidators({
       options: { subscribe: true },
     })
