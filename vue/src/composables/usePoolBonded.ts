@@ -37,7 +37,6 @@ export default function ({ $s }: Params): Response {
     queryPool({
       options: { subscribe: true },
     }).then((response) => {
-      console.log("response", response.pool);
       pool.value = response;
     });
   });

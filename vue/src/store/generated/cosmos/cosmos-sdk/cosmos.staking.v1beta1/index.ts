@@ -226,7 +226,8 @@ export default {
 		init({ dispatch, rootGetters }) {
 			console.log('Vuex module: cosmos.staking.v1beta1 initialized!')
 			if (rootGetters['common/env/client']) {
-				rootGetters['common/env/client'].on('newblock', () => {
+				rootGetters['common/env/client'].on('newblock', (arg) => {
+					// console.log('arg socket',arg);
 					dispatch('StoreUpdate')
 				})
 			}

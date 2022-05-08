@@ -8,6 +8,7 @@ import {
   Ref,
   ref,
   watch,
+  watchEffect,
 } from "vue";
 import { Store } from "vuex";
 import {
@@ -17,6 +18,7 @@ import {
   Stakingv1Beta1Validator,
   V1Beta1Commission,
 } from "../store/generated/cosmos/cosmos-sdk/cosmos.staking.v1beta1/module/rest";
+import { useAprCalculation, usePoolBonded } from ".";
 
 type Response = {
   validators: Ref<{
@@ -36,6 +38,7 @@ export type ValidatorForUI = {
   totalStaked: string;
   selfBonded: string;
   commission: V1Beta1Commission;
+  aprCalculation: string;
 };
 
 type Params = {
@@ -52,6 +55,9 @@ export default function ({ $s }: Params): Response {
       pagination: {},
     },
   });
+
+  // composables
+  let { AprCalculation, params } = useAprCalculation({ $s });
 
   // actions
   let queryValidators = (opts: any) =>
@@ -86,7 +92,22 @@ export default function ({ $s }: Params): Response {
     );
   });
 
+  watch([params.value], () => {
+    queryValidators({
+      options: { subscribe: true },
+    }).then((response) => {
+      if (response.validators) {
+        let arr: Promise<ValidatorForUI>[] = response.validators.map(normalize);
+        Promise.all(arr).then((normalized) => {
+          validators.value.validators.validators = normalized as any;
+        });
+      }
+      validators.value.validators.pagination = response.pagination;
+    });
+  });
+
   // methods
+
   let normalize = async (
     validator: Stakingv1Beta1Validator
   ): Promise<ValidatorForUI> => {
@@ -96,6 +117,7 @@ export default function ({ $s }: Params): Response {
       totalStaked: "",
       selfBonded: "",
       commission: {},
+      aprCalculation: "",
     };
 
     normalized.name = validator.description.moniker;
@@ -103,10 +125,10 @@ export default function ({ $s }: Params): Response {
     normalized.totalStaked = validator.tokens;
     normalized.selfBonded = validator.tokens;
     normalized.commission = validator.commission;
+    normalized.aprCalculation = AprCalculation(validator);
 
     return normalized;
   };
-  
 
   return { validators, validatorsRaw };
 }
