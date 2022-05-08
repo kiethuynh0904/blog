@@ -85,14 +85,14 @@ import {
   useAprCalculation,
 } from "../composables";
 import { computed } from "vue";
-import ValidatorListItem from "../components/ValidatorListItem.vue";
+import TokenTransferList from "../components/TokenTransferList.vue";
 import { ValidatorForUI } from "../composables/useValidators";
 import { Common } from "../helper";
 
 export default {
   name: "Validators",
   components: {
-    ValidatorListItem,
+    TokenTransferList,
   },
 
   setup() {

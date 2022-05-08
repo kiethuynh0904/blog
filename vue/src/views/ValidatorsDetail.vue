@@ -86,21 +86,38 @@
         </div>
       </a-col>
       <a-col class="basic-info-right distinguish" :span="8" :offset="1">
-        <text>e chart</text>
       </a-col>
     </a-row>
+    <Suspense>
+      <TokenTransferList :validator_addr="route.params.id" />
+    </Suspense>
   </div>
 </template>
 
 <script lang="ts">
-import { defineComponent, onMounted, ref, computed, watch } from "vue";
+import {
+  defineComponent,
+  onMounted,
+  ref,
+  computed,
+  watch,
+  reactive,
+} from "vue";
 import { useStore } from "vuex";
 import { useRoute } from "vue-router";
 import { Common } from "../helper";
-import { usePoolBonded, useAprCalculation } from "../composables";
+import { usePoolBonded, useAprCalculation, useTxs } from "../composables";
+import TokenTransferList from "../components/TokenTransferList.vue";
 
 export default {
+  components: { TokenTransferList },
+
   setup() {
+    // store & route
+    let $s = useStore();
+    let route = useRoute();
+
+    //state
     let validator = ref({
       isLoading: true,
       data: {},
@@ -108,10 +125,9 @@ export default {
 
     let aprCalculation = ref("");
 
-    let $s = useStore();
-    let route = useRoute();
     let { poolRaw } = usePoolBonded({ $s });
     let { AprCalculation, params } = useAprCalculation({ $s });
+
     let queryValidatorDetail = async (opts?: any) => {
       try {
         const response = await $s.dispatch(
@@ -125,6 +141,7 @@ export default {
         validator.value.isLoading = false;
       }
     };
+
     onMounted(() => {
       if (route.params.id) {
         queryValidatorDetail({
@@ -152,6 +169,7 @@ export default {
     };
 
     return {
+      route,
       validator,
       Common,
       calculateVotePower,
@@ -203,6 +221,7 @@ export default {
   .basic-info-left {
     border-radius: 16px;
     padding: 32px;
+    margin-bottom:10px;
     .label-item {
       display: flex;
     }
