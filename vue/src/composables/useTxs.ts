@@ -6,10 +6,13 @@ import useAPIPagination, {
   Response as APIPagination,
 } from "@starport/vue/src/composables/useAPIPagination";
 import { Amount } from "@starport/vue/src/utils/interfaces";
+import { EventEmitter } from "events";
 
 type Params = {
   $s: Store<any>;
-  opts?: any;
+  opts: {
+    realTime: boolean;
+  };
   validator_addr: string | string[];
 };
 
@@ -31,11 +34,13 @@ export type TxForUI = {
 
 export default async function ({
   $s,
-  opts,
+  opts: { realTime },
   validator_addr,
 }: Params): Promise<Response> {
-  //methods
+  //store
+  let client = computed<EventEmitter>(() => $s.getters["common/env/client"]);
 
+  //methods
   let normalizeAPIResponse = (resp: any) => {
     let { txs, tx_responses, pagination } = resp;
 
@@ -122,6 +127,21 @@ export default async function ({
   let recvAndSentPager: ComputedRef<Pager> = computed(() =>
     merge(recvAPIPagination.pager, sentAPIPagination.pager)
   );
+
+  if (realTime) {
+    client.value.on("newblock", async () => {
+      // there's got bet a better way to diff latest vs. current while sparing this wasted round-trip
+      let recv = await fetchTxs(0, WITHDRAW_REWARDS_EVENT.value);
+      let sent = await fetchTxs(0, DELEGATE_EVENT.value);
+      console.log({ recv, sent });
+      let currentTotal = recvAndSentPager.value.total.value;
+      let latestTotal =
+        Number(recv.pagination.total) + Number(sent.pagination.total);
+      let diff = latestTotal - currentTotal;
+      newTxs.value = diff;
+
+    });
+  }
 
   //   //watch
   //   watch(
