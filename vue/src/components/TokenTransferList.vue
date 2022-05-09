@@ -3,6 +3,17 @@
     <a-typography-title :level="4" class="title"
       >Transactions</a-typography-title
     >
+    <a-button
+      v-if="newTxs"
+      class="load-more"
+      shape="round"
+      @click="loadNewItems"
+    >
+      <a-spin v-if="state.isNewTxLoading" />
+      <a-typography-text v-else type="success">
+        {{ showMoreText }}</a-typography-text
+      >
+    </a-button>
     <a-list item-layout="horizontal" :data-source="list">
       <template #renderItem="{ item }">
         <div class="tx-item">
@@ -23,7 +34,7 @@
               </div>
               <div class="tx-message__txhash tx-row">
                 <a-space :size="3">
-                  <span class="label-text ">Tx hash:</span>
+                  <span class="label-text">Tx hash:</span>
                   <span>{{ item.hash }}</span>
                 </a-space>
               </div>
@@ -91,7 +102,7 @@
 
 <script lang="ts">
 import { useTxs } from "../composables";
-import { defineComponent, computed, reactive } from "vue";
+import { defineComponent, computed, reactive, watch } from "vue";
 import { useStore } from "vuex";
 import { TxForUI } from "../composables/useTxs";
 import { formatPrice } from "../helper/common";
@@ -124,15 +135,32 @@ export default defineComponent({
 
     let { pager, newTxs, normalize } = await useTxs({
       $s,
+      opts: { realTime: true },
       validator_addr: props.validator_addr,
     });
+
+    console.log("newTxs", newTxs);
+    console.log("pager", pager);
 
     let list = computed<TxForUI[]>(() => {
       return pager.value.page.value
         .map(normalize)
-        .slice(0, state.listSize)
+        .slice(
+          pager.value.total.value - state.listSize,
+          pager.value.total.value,
+        )
         .sort((a, b) => b.height - a.height);
     });
+
+    let showMoreText = computed<string>(
+      () => `${newTxs.value} new ${newTxs.value > 1 ? "items" : "item"}`
+    );
+
+    let loadNewItems = async () => {
+      state.isNewTxLoading = true;
+      await pager.value.load();
+      state.isNewTxLoading = !!newTxs.value;
+    };
 
     console.log("list", list);
 
@@ -148,10 +176,22 @@ export default defineComponent({
       }
     };
 
+    // //watch
+    // watch(
+    //   () => newTxs.value,
+    //   async () => {
+    //     console.log("newTxs.value", newTxs.value);
+    //   }
+    // );
+
     return {
       list,
+      newTxs,
       formatPrice,
       formatTxType,
+      showMoreText,
+      loadNewItems,
+      state,
     };
   },
 });
@@ -166,7 +206,7 @@ export default defineComponent({
 .tx-row {
   display: flex;
   margin-bottom: 10px;
-  margin-top:10px;
+  margin-top: 10px;
 }
 
 .tx-list {
@@ -201,6 +241,9 @@ export default defineComponent({
   &__height {
     display: flex;
   }
+}
+.load-more {
+  margin-bottom: 10px;
 }
 </style>
 
