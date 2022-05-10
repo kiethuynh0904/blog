@@ -25,82 +25,147 @@
       <span></span>
       <p>Only the latest 10,000 blocks will be shown here.</p>
     </div>
-    <div class="blocks-refresh-section" v-if="numberNewBlocks > 0">
+    <div class="blocks-refresh-section" v-if="state.numberOfNewBlocks > 0">
       <a href="#" @click="onUpdateNewBlocks">
-        <p>{{ numberNewBlocks }} new blocks. Click to refresh</p>
+        <p>{{ state.numberOfNewBlocks }} new blocks. Click to refresh</p>
         <span></span>
       </a>
     </div>
-    <!-- <div class="blocks-list">
-      <div
+    <div class="blocks-list">
+      <a-list
+        :loading="state.isLoading"
+        item-layout="horizontal"
+        :data-source="state.blocks"
         class="block"
-        :key="block.block_id.hash"
-        v-for="block in blocks.data"
       >
-        <a-row class="wrapper" type="flex">
-          <a-col :xs="12" :sm="12" :md="4" :order="1" class="block-left">
-            <h5 class="block-number">#{{ block.header.height }}</h5>
-            <p class="block-availability">an hour ago</p>
-          </a-col>
-          <a-col :xs="12" :sm="12" :md="0" :order="3"> Hello </a-col>
-          <a-col :xs="0" :sm="0" :md="20" :order="2" class="block-right">
-            <a-row type="flex">
-              <a-col :md="6" :order="1" class="block-right-segment">
-                <div class="block-proposer">Proposer</div>
-                <p>{{ block.header.proposer_address }}</p>
-              </a-col>
-              <a-col :md="6" :order="2" class="block-right-segment">
-                <div class="block-fee">Fee</div>
-                <p>0</p>
-              </a-col>
-              <a-col :md="6" :order="3" class="block-right-segment">
-                <div class="block-transactions">Transactions</div>
-                <p>0</p>
-              </a-col>
-              <a-col :md="6" :order="4" class="block-right-segment">
-                <div class="block-bytes">Bytes</div>
-                <p>0</p>
-              </a-col>
-            </a-row>
-          </a-col>
-        </a-row>
+        <template #renderItem="{ item: block }">
+          <a-row class="wrapper" type="flex">
+            <a-col :xs="12" :sm="12" :md="4" :order="1" class="block-left">
+              <h5 class="block-number">#{{ block.header.height }}</h5>
+              <p class="block-availability">an hour ago</p>
+            </a-col>
+            <a-col :xs="12" :sm="12" :md="0" :order="3"> Hello </a-col>
+            <a-col :xs="0" :sm="0" :md="20" :order="2" class="block-right">
+              <a-row type="flex">
+                <a-col :md="6" :order="1" class="block-right-segment">
+                  <div class="block-proposer">Proposer</div>
+                  <p>{{ block.header.proposer_address }}</p>
+                </a-col>
+                <a-col :md="6" :order="2" class="block-right-segment">
+                  <div class="block-fee">Fee</div>
+                  <p>0</p>
+                </a-col>
+                <a-col :md="6" :order="3" class="block-right-segment">
+                  <div class="block-transactions">Transactions</div>
+                  <p>0</p>
+                </a-col>
+                <a-col :md="6" :order="4" class="block-right-segment">
+                  <div class="block-bytes">Bytes</div>
+                  <p>0</p>
+                </a-col>
+              </a-row>
+            </a-col>
+          </a-row>
+        </template>
+      </a-list>
+      <div v-if="state.blocks.length > 0">
+        <a-pagination
+          show-size-changer
+          :default-current="currentPage"
+          :total="1000"
+          @change="onPageChange"
+        />
       </div>
-    </div> -->
+    </div>
   </div>
 </template>
 
-<script setup>
+<script lang="ts">
 import { useStore } from "vuex";
-import { computed, onMounted, reactive, watch } from "vue";
-let store = useStore();
-let state = reactive({ isLoading: false, numberOfNewBlocks: 0, blocks: [] });
-let height = computed(
-  () => store.getters["common/blocks/getBlocks"](10)[0]?.height
-);
+import { computed, onMounted, reactive, watch, ref } from "vue";
 
-watch([state.blocks, height], (currentValue) => {
-  console.log("cru: ", currentValue);
-  state.numberNewBlocks =
-    currentValue[0].length > 0
-      ? currentValue[1] - currentValue[0]?.header.height
-      : 0;
-});
+export interface State {
+  isLoading: boolean;
+  numberOfNewBlocks: number;
+  blocks: any[];
+}
 
-let onUpdateNewBlocks = () => {
-  store.commit("custom/blocks/UPDATE_INITIAL_BLOCKS", {
-    params: { params: {} },
-  });
+export default {
+  name: "Blocks",
+  setup() {
+    // store
+    let $s = useStore();
+
+    // computed
+    let state: State = reactive({
+      isLoading: false,
+      numberOfNewBlocks: 0,
+      blocks: <any>[],
+    });
+    let currentPage = ref(1);
+    let latestHeight = ref(null);
+
+    let height = computed(
+      () => $s.getters["common/blocks/getBlocks"](10)[0]?.height
+    );
+
+    //lh
+    onMounted(() => {
+      fetchBlocks({
+        params: {},
+      });
+    });
+
+    watch(
+      () => [state.blocks, height],
+      (currentValue: any) => {
+        if (currentValue?.[0].length > 0 && latestHeight.value !== null) {
+          state.numberOfNewBlocks =
+            Number(currentValue[1].value) - Number(latestHeight.value);
+        }
+      },
+      { deep: true }
+    );
+    //methods
+
+    const onPageChange = (current: number) => {
+      fetchBlocks({
+        params: {},
+        offset: current,
+      });
+    };
+
+    let fetchBlocks = async (opts: any) => {
+      try {
+        state.isLoading = true;
+        const response = await $s.dispatch(
+          "custom/blocks/queryBlocksInRange",
+          opts
+        );
+        state.blocks = response.blocks;
+        latestHeight.value = response.latestHeight;
+      } catch (error) {
+      } finally {
+        state.isLoading = false;
+      }
+    };
+
+    let onUpdateNewBlocks = () => {
+      fetchBlocks({
+        params: {},
+        offset: currentPage.value,
+      });
+    };
+
+    return {
+      state,
+      height,
+      onUpdateNewBlocks,
+      onPageChange,
+      currentPage,
+    };
+  },
 };
-
-onMounted(async () => {
-  state.isLoading = true;
-  let blocksRes = await store.dispatch("custom/blocks/queryBlocksInRange", {
-    params: {},
-  });
-  state.blocks = blocksRes;
-  console.log('abcs: ', state.blocks);
-  state.isLoading = false;
-});
 </script>
 
 <style lang="scss" scoped>
