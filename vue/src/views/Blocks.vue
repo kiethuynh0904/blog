@@ -25,14 +25,18 @@
       <span></span>
       <p>Only the latest 10,000 blocks will be shown here.</p>
     </div>
-    <div class="blocks-refresh-section">
-      <a href="#">
-        <p>217 new blocks. Click to refresh</p>
+    <div class="blocks-refresh-section" v-if="numberNewBlocks > 0">
+      <a href="#" @click="onUpdateNewBlocks">
+        <p>{{ numberNewBlocks }} new blocks. Click to refresh</p>
         <span></span>
       </a>
     </div>
-    <div class="blocks-list">
-      <div class="block" :key="block.block_id.hash" v-for="block in blocks.data">
+    <!-- <div class="blocks-list">
+      <div
+        class="block"
+        :key="block.block_id.hash"
+        v-for="block in blocks.data"
+      >
         <a-row class="wrapper" type="flex">
           <a-col :xs="12" :sm="12" :md="4" :order="1" class="block-left">
             <h5 class="block-number">#{{ block.header.height }}</h5>
@@ -61,7 +65,7 @@
           </a-col>
         </a-row>
       </div>
-    </div>
+    </div> -->
   </div>
 </template>
 
@@ -69,20 +73,34 @@
 import { useStore } from "vuex";
 import { computed, onMounted, reactive, watch } from "vue";
 let store = useStore();
-let blocks = reactive({ data: [], isLoading: false });
-let height = computed(() => store.getters['common/blocks/getBlocks'](10)[0]?.height);
+let state = reactive({ isLoading: false, numberOfNewBlocks: 0, blocks: [] });
+let height = computed(
+  () => store.getters["common/blocks/getBlocks"](10)[0]?.height
+);
+
+watch([state.blocks, height], (currentValue) => {
+  console.log("cru: ", currentValue);
+  state.numberNewBlocks =
+    currentValue[0].length > 0
+      ? currentValue[1] - currentValue[0]?.header.height
+      : 0;
+});
+
+let onUpdateNewBlocks = () => {
+  store.commit("custom/blocks/UPDATE_INITIAL_BLOCKS", {
+    params: { params: {} },
+  });
+};
 
 onMounted(async () => {
-  blocks.isLoading = true;
+  state.isLoading = true;
   let blocksRes = await store.dispatch("custom/blocks/queryBlocksInRange", {
     params: {},
   });
-  blocks.data = blocksRes;
-  blocks.isLoading = false;
-
-  console.log(blocks.data);
+  state.blocks = blocksRes;
+  console.log('abcs: ', state.blocks);
+  state.isLoading = false;
 });
-
 </script>
 
 <style lang="scss" scoped>

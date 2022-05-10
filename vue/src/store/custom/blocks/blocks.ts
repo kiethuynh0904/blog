@@ -95,9 +95,8 @@ async function decodeTx(apiCosmos, apiTendermint, encodedTx) {
 
 const getDefaultState = () => ({
     initialBlocks: {},
-    newBlocks: [],
     offset: 0,
-    size: 10,
+    _Subscriptions: new Set(),
 });
 
 const state = getDefaultState();
@@ -116,12 +115,6 @@ export default {
             },
     },
     mutations: {
-        ADD_BLOCK(state, block) {
-            state.blocks.push(block);
-            if (state.blocks.length > state.size) {
-                state.blocks.shift();
-            }
-        },
         RESET_STATE(state) {
             Object.assign(state, getDefaultState());
         },
@@ -138,11 +131,11 @@ export default {
     actions: {
         init({ dispatch, rootGetters }) {
             console.log("Vuex module: custom.blocks initialized!");
-            if (rootGetters["common/env/client"]) {
-                rootGetters["common/env/client"].on("newblock", (data) => {
-                    // dispatch("addBlock", data);
-                });
-            }
+            // if (rootGetters["common/env/client"]) {
+            //     rootGetters["common/env/client"].on("newblock", (data) => {
+            //         dispatch("addBlock", data);
+            //     });
+            // }
         },
         async queryBlocksInRange(
             { commit, rootGetters, getters },
@@ -154,12 +147,20 @@ export default {
         ) {
             try {
                 const key = params ?? {};
-                const blockchainInfo = await axios.get(`${rootGetters['common/env/apiTendermint']}/abci_info`);
+                const blockchainInfo = await axios.get(
+                    `${rootGetters["common/env/apiTendermint"]}/abci_info`
+                );
 
-                let lastest_height = Number(blockchainInfo.data.result.response.last_block_height);
-                        
+                let lastest_height = Number(
+                    blockchainInfo.data.result.response.last_block_height
+                );
+
                 const blocks = await axios.get(
-                    `${rootGetters["common/env/apiTendermint"]}/blockchain?minHeight=${lastest_height - 9}&maxHeight=${lastest_height}`
+                    `${
+                        rootGetters["common/env/apiTendermint"]
+                    }/blockchain?minHeight=${
+                        lastest_height - 9
+                    }&maxHeight=${lastest_height}`
                 );
 
                 commit("QUERY", {
@@ -191,14 +192,16 @@ export default {
                 );
             }
         },
-        // async addBlock({ commit, rootGetters }, blockData) {
+        // async addBlock({ commit, rootGetters }, payload) {
         //     try {
+        //         console.log("paylak: ", payload);
+
         //         const blockDetails = await axios.get(
         //             rootGetters["common/env/apiTendermint"] +
         //                 "/block?height=" +
-        //                 blockData.data.value.block.header.height
+        //                 payload.data.value.block.header.height
         //         );
-        //         const txDecoded = blockData.data.value.block.data.txs.map(
+        //         const txDecoded = payload.data.value.block.data.txs.map(
         //             async (tx) => {
         //                 const dec = await decodeTx(
         //                     rootGetters["common/env/apiCosmos"],
@@ -211,10 +214,10 @@ export default {
         //         const txs = await Promise.all(txDecoded);
 
         //         const block = {
-        //             height: blockData.data.value.block.header.height,
-        //             timestamp: blockData.data.value.block.header.time,
+        //             height: payload.data.value.block.header.height,
+        //             timestamp: payload.data.value.block.header.time,
         //             hash: blockDetails.data.result.block_id.hash,
-        //             details: blockData.data.value.block,
+        //             details: payload.data.value.block,
         //             txDecoded: txs,
         //         };
 
@@ -225,6 +228,16 @@ export default {
         //         );
         //     }
         // },
+        async StoreUpdate({ state, dispatch }) {
+            state._Subscriptions.forEach(async (subscription) => {
+                try {
+                    const sub = JSON.parse(subscription);
+                    await dispatch(sub.action, sub.payload);
+                } catch (e) {
+                    throw new Error("Subscriptions: " + e.message);
+                }
+            });
+        },
         resetState({ commit }) {
             commit("RESET_STATE");
         },
