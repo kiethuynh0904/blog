@@ -1,4 +1,5 @@
 import { blocks, env, wallet } from '@starport/vuex'
+import blocksV2 from './custom/blocks';
 
 import generated from './generated'
 export default function init(store) {
@@ -6,6 +7,7 @@ export default function init(store) {
     moduleInit(store)
   }
   blocks(store)
+  blocksV2(store)
   env(store)
   wallet(store)
 }

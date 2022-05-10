@@ -11,7 +11,7 @@
         <div class="chain-info">
           <div class="chain-height">
             <p>Height</p>
-            <h5>4875435</h5>
+            <h5>{{ height || 0 }}</h5>
           </div>
           <div class="chain-avg-time">
             <p>Average Block Time</p>
@@ -32,10 +32,10 @@
       </a>
     </div>
     <div class="blocks-list">
-      <div class="block">
+      <div class="block" :key="block.block_id.hash" v-for="block in blocks.data">
         <a-row class="wrapper" type="flex">
           <a-col :xs="12" :sm="12" :md="4" :order="1" class="block-left">
-            <h5 class="block-number">#4575413</h5>
+            <h5 class="block-number">#{{ block.header.height }}</h5>
             <p class="block-availability">an hour ago</p>
           </a-col>
           <a-col :xs="12" :sm="12" :md="0" :order="3"> Hello </a-col>
@@ -43,7 +43,7 @@
             <a-row type="flex">
               <a-col :md="6" :order="1" class="block-right-segment">
                 <div class="block-proposer">Proposer</div>
-                <p>Miami</p>
+                <p>{{ block.header.proposer_address }}</p>
               </a-col>
               <a-col :md="6" :order="2" class="block-right-segment">
                 <div class="block-fee">Fee</div>
@@ -65,34 +65,24 @@
   </div>
 </template>
 
-<script>
-import { reactive, onMounted, watch } from "vue";
+<script setup>
+import { useStore } from "vuex";
+import { computed, onMounted, reactive, watch } from "vue";
+let store = useStore();
+let blocks = reactive({ data: [], isLoading: false });
+let height = computed(() => store.getters['common/blocks/getBlocks'](10)[0]?.height);
 
-export default {
-  setup() {
-    let state = reactive({
-      screenSize: 0,
-	  clearTO: null,
-    });
+onMounted(async () => {
+  blocks.isLoading = true;
+  let blocksRes = await store.dispatch("custom/blocks/queryBlocksInRange", {
+    params: {},
+  });
+  blocks.data = blocksRes;
+  blocks.isLoading = false;
 
+  console.log(blocks.data);
+});
 
-	const handleScreenSizeChange = () => {
-		state.clearTO = setTimeout(() => {
-			if(state.clearTO) clearTimeout(state.clearTO);
-			state.screenSize = document.body.getBoundingClientRect().width;
-		}, 1000);
-	}
-
-    const handleOnMounted = () => {
-		window.addEventListener('resize', handleScreenSizeChange);
-    };
-    onMounted(handleOnMounted);
-	watch(() => {
-		console.log(state.screenSize);
-	})
-    return state;
-  },
-};
 </script>
 
 <style lang="scss" scoped>
@@ -132,6 +122,9 @@ $title-text: rgba(8, 10, 50, 0.5);
     p {
       margin-bottom: 0;
       font-weight: 500;
+      overflow: hidden;
+      white-space: nowrap;
+      text-overflow: ellipsis;
     }
   }
 }
