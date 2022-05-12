@@ -88,7 +88,7 @@
                 <a-space :size="5">
                   <span class="label-text">Fee:</span>
                   <span :style="{ fontSize: 14 + 'px' }">{{
-                    0.3333 + "Stake"
+                    0.3333 + "SCS"
                   }}</span>
                 </a-space>
               </div>

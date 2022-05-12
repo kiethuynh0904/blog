@@ -1,11 +1,13 @@
 accounts:
   - name: alice
-    coins: ["20000token", "200000000stake"]
+    coins: ["20000000scs"]
   - name: bob
-    coins: ["10000token", "100000000stake"]
+    coins: ["10000000scs"]
+  - name: s3bank
+    coins: ["50000000scs"]
 validator:
   name: alice
-  staked: "100000000stake"
+  staked: "10000000scs"
 client:
   openapi:
     path: "docs/static/openapi.yml"
@@ -13,4 +15,21 @@ client:
     path: "vue/src/store"
 faucet:
   name: bob
-  coins: ["5token", "100000stake"]
+  coins: ["100000scs"]
+
+genesis:
+  app_state:
+    staking:
+      params:
+        bond_denom: "scs"
+    crisis:
+      constant_fee:
+        denom: "scs"
+    gov:
+      deposit_params:
+        min_deposit:
+          - amount: "1000000"
+            denom: "scs"
+    mint:
+      params:    
+        mint_denom: "scs"

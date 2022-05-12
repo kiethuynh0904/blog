@@ -58,6 +58,7 @@ export default function ({ $s }: Params): Response {
 
   // composables
   let { AprCalculation, params } = useAprCalculation({ $s });
+  console.log({params});
 
   // actions
   let queryValidators = (opts: any) =>

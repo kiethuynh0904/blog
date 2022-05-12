@@ -87,7 +87,7 @@ export default function ({ $s }: Params): Response {
       (Number(totalStaked) /
         Number(
           AprParams.value.totalSupply.supply.filter(
-            (item) => item.denom === "stake"
+            (item) => item.denom === "scs"
           )?.[0]?.amount
         ));
 

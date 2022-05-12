@@ -32,7 +32,7 @@
                     >Total Staked</a-typography-paragraph
                   >
                   <a-typography-paragraph>{{
-                    Common.formatPrice(item.totalStaked) + " Stake"
+                    Common.formatPrice(item.totalStaked) + " SCS"
                   }}</a-typography-paragraph>
                 </label>
                 <label
@@ -56,7 +56,7 @@
                     >Self Bonded</a-typography-paragraph
                   >
                   <a-typography-paragraph>{{
-                    100 + " Stake"
+                    "1,000,000" + " SCS"
                   }}</a-typography-paragraph>
                 </label>
                 <label
