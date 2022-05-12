@@ -49,7 +49,7 @@
             <a-typography-paragraph type="secondary"
               >Self Bonded:</a-typography-paragraph
             >
-            <a-typography-paragraph>100 Stake(0%)</a-typography-paragraph>
+            <a-typography-paragraph>100 SCS(0%)</a-typography-paragraph>
           </a-space>
         </div>
         <div class="label-item">
@@ -57,7 +57,7 @@
             <a-typography-paragraph type="secondary"
               >Stake Balance:</a-typography-paragraph
             >
-            <a-typography-paragraph>20.106894 Stake</a-typography-paragraph>
+            <a-typography-paragraph>20.106894 SCS</a-typography-paragraph>
           </a-space>
         </div>
         <div class="label-item">

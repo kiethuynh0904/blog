@@ -133,7 +133,6 @@ export default async function ({
       // there's got bet a better way to diff latest vs. current while sparing this wasted round-trip
       let recv = await fetchTxs(0, WITHDRAW_REWARDS_EVENT.value);
       let sent = await fetchTxs(0, DELEGATE_EVENT.value);
-      console.log({ recv, sent });
       let currentTotal = recvAndSentPager.value.total.value;
       let latestTotal =
         Number(recv.pagination.total) + Number(sent.pagination.total);
