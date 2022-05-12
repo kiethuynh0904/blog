@@ -18,7 +18,7 @@ import { computed } from 'vue'
 import { useStore } from 'vuex'
 
 export default {
-  name: 'Portfolio',
+  name: 'Wallet',
 
   components: { SpTokenTransfer, SpAssets, SpTokenTransferList },
 
