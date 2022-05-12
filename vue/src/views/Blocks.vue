@@ -176,6 +176,7 @@ $title-text: rgba(8, 10, 50, 0.5);
   .wrapper {
     border: 1px solid rgba(8, 10, 50, 0.1);
     border-radius: 16px;
+    margin-bottom: 14px;
   }
   &-proposer {
     color: $title-text;
@@ -213,7 +214,8 @@ $title-text: rgba(8, 10, 50, 0.5);
 }
 
 .blocks {
-  margin: 0 31.5px;
+  margin: 0 auto;
+  width: 1200px;
   &-generation-info {
     border: 1px solid rgba(8, 10, 50, 0.1);
     overflow: hidden;

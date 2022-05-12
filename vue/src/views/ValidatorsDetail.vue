@@ -1,6 +1,13 @@
 <template>
   <div class="container">
-    <a-typography-title :level="2">Validator Detail</a-typography-title>
+    <a-row>
+      <a-col :span="20">
+        <a-typography-title :level="2">Validator Detail</a-typography-title>
+      </a-col>
+      <a-space>
+        <a-button @click="onShowModal">Stake Token</a-button>
+      </a-space>
+    </a-row>
     <div class="validator-info distinguish">
       <div class="validator-info-avatar"></div>
       <div class="validator-info-label">
@@ -91,6 +98,15 @@
     <Suspense>
       <TokenTransferList :validator_addr="route.params.id" />
     </Suspense>
+    <a-modal
+      :footer="null"
+      title="Staking Token"
+      v-model:visible="modalVisible"
+    >
+      <StakingToken
+        :validator-addr="route.params.id"
+      />
+    </a-modal>
   </div>
 </template>
 
@@ -108,9 +124,13 @@ import { useRoute } from "vue-router";
 import { Common } from "../helper";
 import { usePoolBonded, useAprCalculation, useTxs } from "../composables";
 import TokenTransferList from "../components/TokenTransferList.vue";
+import StakingToken from "../components/StakingToken.vue";
+
+import { h } from "vue";
+import { Modal } from "ant-design-vue";
 
 export default {
-  components: { TokenTransferList },
+  components: { TokenTransferList, StakingToken },
 
   setup() {
     // store & route
@@ -122,6 +142,10 @@ export default {
       isLoading: true,
       data: {},
     });
+
+    let wallet = computed(() => $s.getters["common/wallet/wallet"]);
+
+    let modalVisible = ref(false);
 
     let aprCalculation = ref("");
 
@@ -168,10 +192,38 @@ export default {
       ).toFixed(2);
     };
 
+    const onShowModal = () => {
+      if (wallet && wallet.value) {
+        modalVisible.value = true;
+        return;
+      }
+      Modal.info({
+        title: "Connect Wallet",
+        content: h("div", {}, [
+          h(
+            "p",
+            "You must connect your wallet before staking token to the validator"
+          ),
+        ]),
+
+        onOk() {
+          console.log("ok");
+        },
+      });
+    };
+
+    const onStakeToken = () => {
+      modalVisible.value = false;
+    };
+
     return {
+      onStakeToken,
+      onShowModal,
+      modalVisible,
       route,
       validator,
       Common,
+      wallet,
       calculateVotePower,
       aprCalculation,
       AprCalculation,
@@ -221,7 +273,7 @@ export default {
   .basic-info-left {
     border-radius: 16px;
     padding: 32px;
-    margin-bottom:10px;
+    margin-bottom: 10px;
     .label-item {
       display: flex;
     }
