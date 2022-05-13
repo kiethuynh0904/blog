@@ -7,7 +7,7 @@ import {
   ref,
   watch,
   onMounted,
-  watchEffect
+  watchEffect,
 } from "vue";
 import { Store } from "vuex";
 import { V1Beta1QueryTotalSupplyResponse } from "../store/generated/cosmos/cosmos-sdk/cosmos.bank.v1beta1/module/rest";
@@ -61,6 +61,7 @@ export default function ({ $s }: Params): Response {
       AprParams.value.maxValidators = response.params.max_validators;
     });
     queryMintInflation({
+      params: {},
       options: { subscribe: true },
     }).then((response) => {
       AprParams.value.inflation = response.inflation;
@@ -75,8 +76,7 @@ export default function ({ $s }: Params): Response {
     }).then((response) => {
       AprParams.value.totalSupply = response;
     });
-  })
-  
+  });
 
   //method
   let AprCalculation = (validator: any): string => {

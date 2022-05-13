@@ -1,18 +1,78 @@
 <template>
   <!-- Uncomment the following component to add a form for a `modelName` -->
   <!-- <SpCrud store-name="org.repo.module" item-name="modelName" /> -->
+
   <div class="container">
+    <a-typography-title :level="2">Validators</a-typography-title>
+    <div class="header">
+      <a-typography-title :level="2" :style="{ color: '#0552dc' }"
+        >(S)Core</a-typography-title
+      >
+      <a-typography-paragraph type="secondary"
+        >The backbone of communication among different chains operating in the
+        S3 ecosystem</a-typography-paragraph
+      >
+      <div class="header__info">
+        <div>
+          <a-typography-paragraph type="secondary"
+            >Validators</a-typography-paragraph
+          >
+          <span :style="{ fontSize: 18 + 'px', fontWeight: 'bold' }">
+            {{
+              validators.validators.pagination.total +
+              "/" +
+              params.maxValidators
+            }}
+          </span>
+        </div>
+        <div>
+          <a-typography-paragraph type="secondary"
+            >Inflations</a-typography-paragraph
+          >
+          <span :style="{ fontSize: 18 + 'px', fontWeight: 'bold' }">
+            {{ inflation + " %" }}
+          </span>
+        </div>
+        <div>
+          <a-typography-paragraph type="secondary"
+            >Bonded Token</a-typography-paragraph
+          >
+          <span :style="{ fontSize: 18 + 'px', fontWeight: 'bold' }">
+            {{ Common.formatPrice(poolRaw.bonded_tokens) + " SCS" }}
+          </span>
+        </div>
+      </div>
+    </div>
+    <div class="header-sub">
+      <a-typography-title :level="2">Validator List</a-typography-title>
+      <div>
+        <a-select
+          ref="select"
+          v-model:value="valueSelected"
+          style="width: 120px"
+          :options="options"
+        ></a-select>
+      </div>
+    </div>
+
     <div class="row row-sm-revers">
       <a-list
         :loading="validators.isLoading"
         item-layout="horizontal"
-        :data-source="validatorList"
+        :data-source="
+          valueSelected === 'inactive'
+            ? validatorListInactive
+            : validatorListActive
+        "
       >
         <template #renderItem="{ item, index }">
           <div class="validator-list-container">
             <router-link
               class="outer-link"
-              :to="{ name: 'ValidatorsDetail', params: { id: item.address } }"
+              :to="{
+                name: 'ValidatorsDetail',
+                params: { id: item.address },
+              }"
             />
             <div class="validator-list-item-container validator-list-common">
               <div class="validator-list-item-rank">
@@ -51,14 +111,14 @@
                     item?.aprCalculation + " %"
                   }}</a-typography-paragraph>
                 </label>
-                <label
+                <!-- <label
                   ><a-typography-paragraph type="secondary"
                     >Self Bonded</a-typography-paragraph
                   >
                   <a-typography-paragraph>{{
                     "1,000,000" + " SCS"
                   }}</a-typography-paragraph>
-                </label>
+                </label> -->
                 <label
                   ><a-typography-paragraph type="secondary"
                     >Commission Rate</a-typography-paragraph
@@ -84,10 +144,11 @@ import {
   usePoolBonded,
   useAprCalculation,
 } from "../composables";
-import { computed } from "vue";
+import { computed, ref } from "vue";
 import TokenTransferList from "../components/TokenTransferList.vue";
 import { ValidatorForUI } from "../composables/useValidators";
 import { Common } from "../helper";
+import type { SelectProps } from "ant-design-vue";
 
 export default {
   name: "Validators",
@@ -97,15 +158,31 @@ export default {
 
   setup() {
     let $s = useStore();
-
+    //state
+    let activeKey = ref("1");
+    const options = ref<SelectProps["options"]>([
+      {
+        value: "active",
+        label: "Active",
+      },
+      {
+        value: "inactive",
+        label: "Inactive",
+      },
+    ]);
     // composables
     let { validators, validatorsRaw } = useValidators({ $s });
     let { poolRaw } = usePoolBonded({ $s });
+    let { params } = useAprCalculation({ $s });
 
     //computed
-    const validatorList = computed<ValidatorForUI[]>(
-      () => validators.value.validators.validators
+    const validatorListActive = computed<ValidatorForUI[]>(() =>
+      validators.value.validators.validators.filter((item) => !item.jailed)
     );
+    const validatorListInactive = computed<ValidatorForUI[]>(() =>
+      validators.value.validators.validators.filter((item) => item.jailed)
+    );
+    const inflation = computed(() => (Number(params.value.inflation) * 100).toFixed(2))
     //methods
     const calculateVotePower = (bondedTokens: string) => {
       return (
@@ -114,17 +191,43 @@ export default {
       ).toFixed(2);
     };
 
+    console.log("validatorList", validatorListActive);
+
     return {
-      validatorList,
+      validatorListActive,
+      validatorListInactive,
       calculateVotePower,
       Common,
       validators,
+      activeKey,
+      options,
+      valueSelected: ref("active"),
+      poolRaw,
+      params,
+      inflation,
     };
   },
 };
 </script>
 
 <style lang="scss" scoped>
+.header {
+  width: 700px;
+  border: 1px solid;
+  border-radius: 8px;
+  padding: 15px;
+  border-color: rgba(5, 82, 220, 0.2);
+  background-color: #fbfbfb;
+  &__info {
+    display: flex;
+    justify-content: space-between;
+  }
+}
+.header-sub {
+  margin-top: 15px;
+  display: flex;
+  justify-content: space-between;
+}
 .validator-list-container {
   background-color: transparent;
   margin-bottom: 32px;

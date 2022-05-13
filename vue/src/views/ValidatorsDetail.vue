@@ -80,7 +80,7 @@
             <a-typography-paragraph type="secondary"
               >Current Commission Rate:</a-typography-paragraph
             >
-            <a-typography-paragraph>10% (Max:20%)</a-typography-paragraph>
+            <a-typography-paragraph>{{ (Number(validator?.data?.validator?.commission?.commission_rates?.rate) * 100) + "% " + "(Max:20%)"}}</a-typography-paragraph>
           </a-space>
         </div>
         <div class="label-item">
@@ -142,6 +142,7 @@ export default {
       isLoading: true,
       data: {},
     });
+    
 
     let wallet = computed(() => $s.getters["common/wallet/wallet"]);
 
@@ -215,6 +216,8 @@ export default {
     const onStakeToken = () => {
       modalVisible.value = false;
     };
+
+    console.log("validator",validator);
 
     return {
       onStakeToken,

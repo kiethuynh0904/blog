@@ -39,6 +39,7 @@ export type ValidatorForUI = {
   selfBonded: string;
   commission: V1Beta1Commission;
   aprCalculation: string;
+  jailed: boolean;
 };
 
 type Params = {
@@ -58,7 +59,7 @@ export default function ({ $s }: Params): Response {
 
   // composables
   let { AprCalculation, params } = useAprCalculation({ $s });
-  console.log({params});
+  console.log({ params });
 
   // actions
   let queryValidators = (opts: any) =>
@@ -119,6 +120,7 @@ export default function ({ $s }: Params): Response {
       selfBonded: "",
       commission: {},
       aprCalculation: "",
+      jailed: false,
     };
 
     normalized.name = validator.description.moniker;
@@ -127,6 +129,7 @@ export default function ({ $s }: Params): Response {
     normalized.selfBonded = validator.tokens;
     normalized.commission = validator.commission;
     normalized.aprCalculation = AprCalculation(validator);
+    normalized.jailed = validator.jailed;
 
     return normalized;
   };
